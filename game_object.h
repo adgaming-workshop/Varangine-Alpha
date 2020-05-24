@@ -8,9 +8,9 @@
 
 class vector2f{
 public:
-	float x;
-	float y;
-	vector2f(float x, float y);
+        float x;
+        float y;
+        vector2f(float x, float y);
 };
 
 class GameObject{
@@ -24,6 +24,8 @@ public:
 	T* getComponent();
 	float x = 0;
 	float y = 0;
+	float prev_x = 0;
+	float prev_y = 0;
 	vector2f velocity = vector2f(0, 0);
 	vector2f accel = vector2f(0, 0);
 	bool is_deleted = false;
@@ -73,6 +75,7 @@ T* GameObject::getComponent(){
 			return static_cast<T*>(it->second);
 	return nullptr;
 }
+
 
 
 

@@ -40,16 +40,16 @@ int main(){
 
 	std::vector<std::pair<float, float>> vec;
 	float x, y, vx, vy;
-	for(int j = 0; j < 10; j++){
+	for(int j = 0; j < 6; j++){
 		ge::createObject("rock" + std::to_string(j));
 		ge::addComponent<Renderer>("rock" + std::to_string(j));
 		ge::makeSprite("rock" + std::to_string(j), "rock.png");
 		ge::makeAnimation("rock" + std::to_string(j), 0, 0, 64, 64, 16, 0.05);
 		ge::addComponent<CustomCollider>("rock" + std::to_string(j));
 
-		for (int i = 0; i < 5; i++){
-			x = 40*cos(2*3.14/i);
-			y = 40*sin(2*3.14/i);
+		for (int i = 0; i < 4; i++){
+			x = 40*cos((i+1)*3.14/4);
+			y = 40*sin((i+1)*3.14/4);
 			vec.push_back({x, y,});
 		}
 	

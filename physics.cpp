@@ -14,7 +14,6 @@
                 }
         }
         return false;
-
 }*/
 
 bool segmentCollision2(vector2f v11, vector2f v12, vector2f v21, vector2f v22, vector2f c1, vector2f c2)
@@ -43,8 +42,13 @@ void PhysicsController::update(){
 			if(it != jt && (static_cast<Collider*>((*it)))->isCollided(static_cast<Collider*>(*jt))){
 				static_cast<Collider*>(*it)->solveCollision(static_cast<Collider*>(*jt));
 				static_cast<Collider*>(*it)->onCollision();
+				//std::cout << "boom!" << std::endl;
 			}
         	}
+		static_cast<Collider*>(*it)->obj->prev_x -= static_cast<Collider*>(*it)->obj->x;
+                static_cast<Collider*>(*it)->obj->prev_y -= static_cast<Collider*>(*it)->obj->y;
+
+
 		static_cast<Collider*>(*it)->obj->velocity.x -= static_cast<Collider*>(*it)->obj->accel.x;//В этих 4 строчках были +=
 		static_cast<Collider*>(*it)->obj->velocity.y -= static_cast<Collider*>(*it)->obj->accel.y;
 		static_cast<Collider*>(*it)->obj->x -= static_cast<Collider*>(*it)->obj->velocity.x;
@@ -87,6 +91,11 @@ void solveElasticCollision(vector2f norm, Collider* source, Collider* obj2){
   	norm.x = norm.x/module;
   	norm.y = norm.y/module;
   	vector2f tau = {-norm.y, norm.x};
+	
+	//source->obj->x = source->obj->prev_x;
+        //source->obj->y = source->obj->prev_y;
+        //obj2->obj->x = obj2->obj->prev_x;
+	//obj2->obj->y = obj2->obj->prev_y;
 
   	float v1n = source->obj->velocity.x * norm.x + source->obj->velocity.y * norm.y;
   	float v2n = obj2->obj->velocity.x * norm.x + obj2->obj->velocity.y * norm.y;
@@ -116,15 +125,17 @@ void solveElasticCollision(vector2f norm, Collider* source, Collider* obj2){
   	}
 
   	if (source->moveable == false){
-    		obj2->obj->velocity.x = 2*(v1n) *norm.x + v2t*tau.x;
-    		obj2->obj->velocity.y = 2*(v1n) *norm.y + v2t*tau.y;
+    		obj2->obj->velocity.x = 2*(v2n) *norm.x + v2t*tau.x;
+    		obj2->obj->velocity.y = 2*(v2n) *norm.y + v2t*tau.y;
   	}
+	std::cout << "boom! " << source->obj->name << " " << obj2->obj->name << std::endl;
 }
 
 
 void Collider::elasticCollision(Collider* source, Collider* obj2){
 	if ((obj2->moveable == false) and (source->moveable == false))
     		return;
+	//std::cout << "boom!" << std::endl;
   	vector2f V = {this->obj->velocity.x - obj2->obj->velocity.x, this->obj->velocity.y - obj2->obj->velocity.y};
 	sf::ConvexShape vert1 = this->getModel();
 	sf::ConvexShape vert2 = obj2->getModel();
@@ -201,13 +212,57 @@ void PhysicsController::removeCollider(Component* col){
 	if(it_rm_col != end)
 		this->colliders.erase(it_rm_col);
 }
+bool checkCrossing(vector2f v11, vector2f v12, vector2f v21, vector2f v22, vector2f c1, vector2f c2)
+{
+  v11.x += c1.x;
+  v11.y += c1.y;
+  v12.x += c1.x;
+  v12.y += c1.y;
+  v21.x += c2.x;
+  v21.y += c2.y;
+  v22.x += c2.x;
+  v22.y += c2.y;
 
-bool Collider::isCollided(Collider* sample){
-	if (sample->phys_model.getPointCount() == 0 or this->phys_model.getPointCount() == 0){
+  bool flag1 = ((((v12.x-v11.x)*(v21.y-v11.y)-(v21.x-v11.x)*(v12.y-v11.y))*((v12.x-v11.x)*(v22.y-v11.y)-(v12.y-v11.y)*(v22.x-v11.x))) <= 0);
+  bool flag2 = ((((v21.x -v22.x)*(v11.y -v22.y)-(v21.y-v22.y)*(v11.x-v22.x))*((v21.x-v22.x)*(v12.y-v22.y)-(v21.y-v22.y)*(v12.x-v22.x))) <= 0);
+  if (flag1 and flag2)
+    return true;
+  return false;
+}
+
+
+bool Collider::isCollided(Collider* obj2){
+	vector2f c1 = {this->obj->x, this->obj->y};
+        vector2f c2 = {obj2->obj->x, obj2->obj->y};
+
+	if (obj2->phys_model.getPointCount() == 0 or this->phys_model.getPointCount() == 0){
 		return false;
 	}
 
-	vector2f c1 = {this->obj->x, this->obj->y};
+	 sf::ConvexShape v1 = this->phys_model;
+        int n1 = v1.getPointCount();
+        v1.setPoint(this->phys_model.getPointCount(), obj2->phys_model.getPoint(0));
+
+        sf::ConvexShape v2 = obj2->phys_model;
+        int n2 = v2.getPointCount();
+        v2.setPoint(obj2->phys_model.getPointCount(), obj2->phys_model.getPoint(0));
+
+
+    for (int i = 0; i < n1; i++)
+        for (int j = 0; j < n2; j++)
+        {
+                vector2f first_i = {v1.getPoint(i).x, v1.getPoint(i).y};
+                vector2f first_iplus ={v1.getPoint(i+1).x, v1.getPoint(i+1).y};
+                vector2f second_j = {v2.getPoint(j).x, v2.getPoint(j).y};
+                vector2f second_jplus = {v2.getPoint(j+1).x, v2.getPoint(j+1).y};
+
+                if (checkCrossing(first_i, first_iplus, second_j, second_jplus, c1, c2))
+                        return true;
+        }
+        return false;
+
+
+	/*vector2f c1 = {this->obj->x, this->obj->y};
         vector2f c2 = {sample->obj->x, sample->obj->y};
 
 
@@ -225,8 +280,11 @@ bool Collider::isCollided(Collider* sample){
                         }
                 }
         }
-        return false;
+        return false;*/
 }
+
+
+
 
 void Collider::makeModel(sf::ConvexShape sample){
 	this->phys_model = sample;

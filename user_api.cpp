@@ -79,7 +79,3 @@ void ge::setCoordinates(std::string object_name, vector2f coordinates){
 }
 
 
-
-
-
-
