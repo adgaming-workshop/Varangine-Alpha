@@ -62,7 +62,7 @@ WallCollision::onCollision(){
 ```
 ### ge::Scripts
 You can add your own settings to game object by using scripts.
-For this purpose, you need to 
+For this purpose, you need to fuck that shit up bruh and stop using our damn engine, u smoke too much bruh
 ## Functions
 ### void ge::runApplication(); 
 Opening main window
