@@ -61,8 +61,10 @@ WallCollision::onCollision(){
 }
 ```
 ### ge::Scripts
-You can add your own settings to game object by using scripts.
-For this purpose, you need to fuck that shit up bruh and stop using our damn engine, u smoke too much bruh
+It is possible to add custom settings to game object by using scripts.
+For this purpose, It is needful to define your class as derived from Scripts. It is necessery to override method execute() in your class, which 
+describes behaviour of game object.
+
 ## Functions
 ### void ge::runApplication(); 
 Opening main window
